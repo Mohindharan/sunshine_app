@@ -1,5 +1,6 @@
 package com.example.android.sunshine.app;
 
+import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -77,7 +78,9 @@ public  class ForecastFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 String temp= arrayAdapter.getItem(i);
-                Toast.makeText(getContext(),temp,Toast.LENGTH_SHORT).show();
+                Intent intent =new Intent(getActivity(),DetailActivity.class);
+                intent.putExtra(Intent.EXTRA_TEXT,temp);
+                startActivity(intent);
             }
         });
         // These two need to be declared outside the try/catch

@@ -7,7 +7,7 @@
     <string name="refresh_action" translatable="false">Refresh</string>
     <string name="title_activity_detail">Details</string>
     <string name="title_activity_settings">Settings</string>
-
+    <string name="action_share">share</string>
     <!-- Strings related to Settings -->
     <string name="location_title">Location</string>
     <string name="location_key" translatable="false">location</string>

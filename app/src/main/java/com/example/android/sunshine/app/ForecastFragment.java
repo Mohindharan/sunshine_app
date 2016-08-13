@@ -1,9 +1,11 @@
 package com.example.android.sunshine.app;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -52,11 +54,24 @@ public  class ForecastFragment extends Fragment {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.refresh_action) {
-            FetchWeatherTask task= new FetchWeatherTask();
-            task.execute("641007");
+            updateWeather();
+
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void updateWeather() {
+        FetchWeatherTask task= new FetchWeatherTask();
+        SharedPreferences preferences= PreferenceManager.getDefaultSharedPreferences(getActivity());
+        String location=preferences.getString(getString(R.string.location_key),getString(R.string.location_default_value));
+        task.execute(location);
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        updateWeather();
     }
 
     @Override
@@ -85,11 +100,11 @@ public  class ForecastFragment extends Fragment {
         });
         // These two need to be declared outside the try/catch
         // so that they can be closed in the finally block.
-        FetchWeatherTask task= new FetchWeatherTask();
-        task.execute("94043");
+
 
         return rootView;
     }
+
     public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
 
         @Override
@@ -113,7 +128,14 @@ public  class ForecastFragment extends Fragment {
         /**
          * Prepare the weather high/lows for presentation.
          */
-        private String formatHighLows(double high, double low) {
+        private String formatHighLows(double high, double low, String unitType) {
+
+            if (unitType.equals(getString(R.string.pref_units_imperial))) {
+                high = (high * 1.8) + 32;
+                low = (low * 1.8) + 32;
+            } else if (!unitType.equals(getString(R.string.pref_units_metric))) {
+                Log.d(LOG_TAG, "Unit type not found: " + unitType);
+            }
             // For presentation, assume the user doesn't care about tenths of a degree.
             long roundedHigh = Math.round(high);
             long roundedLow = Math.round(low);
@@ -159,7 +181,8 @@ public  class ForecastFragment extends Fragment {
 
             // now we work exclusively in UTC
             dayTime = new Time();
-
+            SharedPreferences preferences= PreferenceManager.getDefaultSharedPreferences(getActivity());
+            String unitType= preferences.getString( getString(R.string.pref_units_key),getString(R.string.pref_units_metric));
             String[] resultStrs = new String[numDays];
             for(int i = 0; i < weatherArray.length(); i++) {
                 // For now, using the format "Day, description, hi/low"
@@ -188,7 +211,7 @@ public  class ForecastFragment extends Fragment {
                 double high = temperatureObject.getDouble(OWM_MAX);
                 double low = temperatureObject.getDouble(OWM_MIN);
 
-                highAndLow = formatHighLows(high, low);
+                highAndLow = formatHighLows(high, low,unitType);
                 resultStrs[i] = day + " - " + description + " - " + highAndLow;
             }
 
